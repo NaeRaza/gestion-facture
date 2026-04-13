@@ -47,6 +47,16 @@ export default async function ClientsPage() {
     include: { invoices: true },
   });
 
+  const allClients = clients.length;
+
+  const clientsWithInvoices = clients.filter(
+    (client) => client.invoices.length > 0,
+  ).length;
+
+  const clientsWithoutInvoices = clients.filter(
+    (client) => client.invoices.length === 0,
+  ).length;
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header — prend toute la largeur sans max-w */}
@@ -75,7 +85,7 @@ export default async function ClientsPage() {
                 Total clients
               </CardDescription>
               <CardTitle className="text-4xl font-bold text-slate-800 mt-1">
-                3
+                {allClients}
               </CardTitle>
             </CardHeader>
           </Card>
@@ -85,7 +95,7 @@ export default async function ClientsPage() {
                 Avec factures
               </CardDescription>
               <CardTitle className="text-4xl font-bold text-emerald-600 mt-1">
-                2
+                {clientsWithInvoices}
               </CardTitle>
             </CardHeader>
           </Card>
@@ -95,7 +105,7 @@ export default async function ClientsPage() {
                 Sans factures
               </CardDescription>
               <CardTitle className="text-4xl font-bold text-slate-400 mt-1">
-                1
+                {clientsWithoutInvoices}
               </CardTitle>
             </CardHeader>
           </Card>

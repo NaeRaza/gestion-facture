@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,8 +11,40 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function CreateClientPage() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.SyntheticEvent) => {
+    try {
+      e.preventDefault();
+      setLoading(true);
+      setError("");
+
+      const response = await fetch("/api/clients", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name, email }),
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        router.push("/clients");
+      } else {
+        setError(data.error);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
@@ -46,6 +80,8 @@ export default function CreateClientPage() {
               </Label>
               <Input
                 id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 type="text"
                 placeholder="Jean Dupont"
                 className="border-slate-200 focus:border-emerald-500 focus:ring-emerald-500/20 h-11"
@@ -59,6 +95,8 @@ export default function CreateClientPage() {
               </Label>
               <Input
                 id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 type="email"
                 placeholder="jean@example.com"
                 className="border-slate-200 focus:border-emerald-500 focus:ring-emerald-500/20 h-11"
@@ -75,7 +113,11 @@ export default function CreateClientPage() {
                   ← Annuler
                 </Button>
               </Link>
-              <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold h-11 px-8">
+              <Button
+                onClick={handleSubmit}
+                type="submit"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold h-11 px-8"
+              >
                 Créer le client →
               </Button>
             </div>

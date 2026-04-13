@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,8 +10,43 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.SyntheticEvent) => {
+    try {
+      e.preventDefault();
+      setLoading(true);
+      setError("");
+      const response = await fetch("api/auth/login", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        router.push("/clients");
+      } else {
+        setError(data.error);
+      }
+    } catch (e) {
+      console.error(e);
+      setError("Une erreur inattendue est survenue");
+    } finally {
+      setLoading(false); // ← finally au lieu de mettre setLoading après le if/else
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-zinc-950">
       {/* Cercles décoratifs en arrière plan */}
@@ -46,40 +83,54 @@ export default function LoginPage() {
         </CardHeader>
 
         <CardContent className="space-y-5">
-          <div className="space-y-2">
-            <Label
-              htmlFor="email"
-              className="text-zinc-300 text-sm font-medium"
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <Label
+                htmlFor="email"
+                className="text-zinc-300 text-sm font-medium"
+              >
+                Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="john@example.com"
+                className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-emerald-500 focus:ring-emerald-500/20 h-11"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label
+                htmlFor="password"
+                className="text-zinc-300 text-sm font-medium"
+              >
+                Mot de passe
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-emerald-500 focus:ring-emerald-500/20 h-11"
+              />
+              {error && (
+                <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3">
+                  <p className="text-red-400 text-sm">{error}</p>
+                </div>
+              )}
+            </div>
+
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-colors"
             >
-              Email
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="john@example.com"
-              className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-emerald-500 focus:ring-emerald-500/20 h-11"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label
-              htmlFor="password"
-              className="text-zinc-300 text-sm font-medium"
-            >
-              Mot de passe
-            </Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-emerald-500 focus:ring-emerald-500/20 h-11"
-            />
-          </div>
-
-          <Button className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-colors">
-            Se connecter
-          </Button>
-
+              {loading ? "Connexion..." : "Se connecter"}
+            </Button>
+          </form>
           <p className="text-center text-sm text-zinc-500">
             Accès réservé aux administrateurs
           </p>

@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 const navItems = [
   {
@@ -49,6 +52,24 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("api/auth/logout", {
+        method: "POST",
+      });
+
+      if (response.ok) {
+        router.push("/login");
+      } else {
+        console.error("Erreur lors de la déconnexion");
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-slate-50">
       {/* Sidebar */}
@@ -110,6 +131,7 @@ export default function DashboardLayout({
 
           {/* Logout */}
           <Button
+            onClick={handleLogout}
             variant="ghost"
             className="w-full text-slate-400 hover:bg-slate-800 hover:text-red-400 transition-colors justify-start"
           >
