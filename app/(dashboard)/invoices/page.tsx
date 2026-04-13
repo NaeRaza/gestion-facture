@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -17,41 +15,42 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import Link from "next/link";
+import { prisma } from "@/lib/prisma";
 
-const invoices = [
-  {
-    id: "inv-1",
-    description: "Développement site web",
-    amount: 1500,
-    status: "PAID",
-    createdAt: "2024-01-20",
-    client: { name: "Jean Dupont", email: "jean@example.com" },
-  },
-  {
-    id: "inv-2",
-    description: "Maintenance mensuelle",
-    amount: 300,
-    status: "PENDING",
-    createdAt: "2024-02-01",
-    client: { name: "Marie Martin", email: "marie@example.com" },
-  },
-  {
-    id: "inv-3",
-    description: "Refonte logo",
-    amount: 500,
-    status: "CANCELLED",
-    createdAt: "2024-02-15",
-    client: { name: "Paul Bernard", email: "paul@example.com" },
-  },
-  {
-    id: "inv-4",
-    description: "Campagne marketing",
-    amount: 800,
-    status: "PENDING",
-    createdAt: "2024-03-01",
-    client: { name: "Jean Dupont", email: "jean@example.com" },
-  },
-];
+// const invoices = [
+//   {
+//     id: "inv-1",
+//     description: "Développement site web",
+//     amount: 1500,
+//     status: "PAID",
+//     createdAt: "2024-01-20",
+//     client: { name: "Jean Dupont", email: "jean@example.com" },
+//   },
+//   {
+//     id: "inv-2",
+//     description: "Maintenance mensuelle",
+//     amount: 300,
+//     status: "PENDING",
+//     createdAt: "2024-02-01",
+//     client: { name: "Marie Martin", email: "marie@example.com" },
+//   },
+//   {
+//     id: "inv-3",
+//     description: "Refonte logo",
+//     amount: 500,
+//     status: "CANCELLED",
+//     createdAt: "2024-02-15",
+//     client: { name: "Paul Bernard", email: "paul@example.com" },
+//   },
+//   {
+//     id: "inv-4",
+//     description: "Campagne marketing",
+//     amount: 800,
+//     status: "PENDING",
+//     createdAt: "2024-03-01",
+//     client: { name: "Jean Dupont", email: "jean@example.com" },
+//   },
+// ];
 
 const statusConfig = {
   PAID: {
@@ -69,7 +68,25 @@ const statusConfig = {
   },
 };
 
-export default function InvoicesPage() {
+export default async function InvoicesPage() {
+  const invoices = await prisma.invoice.findMany({
+    include: { client: true },
+  });
+
+  const allInvoices = invoices.length;
+
+  const paidInvoices = invoices.filter(
+    (invoice) => invoice.status === "PAID",
+  ).length;
+
+  const pendingInvoices = invoices.filter(
+    (invoice) => invoice.status === "PENDING",
+  ).length;
+
+  const cancelledInvoices = invoices.filter(
+    (invoice) => invoice.status === "CANCELLED",
+  ).length;
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
@@ -96,7 +113,7 @@ export default function InvoicesPage() {
                 Total factures
               </CardDescription>
               <CardTitle className="text-4xl font-bold text-slate-800 mt-1">
-                4
+                {allInvoices}
               </CardTitle>
             </CardHeader>
           </Card>
@@ -106,7 +123,7 @@ export default function InvoicesPage() {
                 Payées
               </CardDescription>
               <CardTitle className="text-4xl font-bold text-emerald-600 mt-1">
-                1
+                {paidInvoices}
               </CardTitle>
             </CardHeader>
           </Card>
@@ -116,7 +133,7 @@ export default function InvoicesPage() {
                 En attente
               </CardDescription>
               <CardTitle className="text-4xl font-bold text-amber-500 mt-1">
-                2
+                {pendingInvoices}
               </CardTitle>
             </CardHeader>
           </Card>
@@ -126,7 +143,7 @@ export default function InvoicesPage() {
                 Annulées
               </CardDescription>
               <CardTitle className="text-4xl font-bold text-red-500 mt-1">
-                1
+                {cancelledInvoices}
               </CardTitle>
             </CardHeader>
           </Card>
@@ -193,7 +210,7 @@ export default function InvoicesPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-slate-500 px-6 py-4">
-                    {invoice.createdAt}
+                    {new Date(invoice.createdAt).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="text-right px-6 py-4 space-x-2">
                     <Link href={`/invoices/${invoice.id}`}>
